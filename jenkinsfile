@@ -29,5 +29,12 @@ pipeline {
                 }
             }
         }
+        stage('clean uo') {
+            steps {
+                script {
+                    sh 'echo "cleaning up Stage"'
+                }
+            }
+        }
     }
 }
