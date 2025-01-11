@@ -1,38 +1,51 @@
 pipeline {
     agent any
     stages {
-        stage('Build') {
+        stage('Initial Cleanup') {
             steps {
-                script {
-                    sh 'echo "Building Stage"'
+                dir("${WORKSPACE}") {
+                    deleteDir()
                 }
             }
         }
-        stage('Test') {
+        stage('Checkout SCM') {
             steps {
-                script {
-                    sh 'echo "Testing Stage"'
-                }
+                git branch: 'main', url: 'https://github.com/Prince-Tee/php-todo.git'
             }
         }
-        stage('Package') {
+        stage('Prepare Dependencies') {
             steps {
                 script {
-                    sh 'echo "Packaging Stage"'
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    sh 'echo "Deploying Stage"'
-                }
-            }
-        }
-        stage('clean uo') {
-            steps {
-                script {
-                    sh 'echo "cleaning up Stage"'
+                    // Move .env.sample to .env and set environment variables
+                    sh '''
+                        mv .env.sample .env
+                        echo "DB_HOST=${DB_HOST}" >> .env
+                        echo "DB_PORT=${DB_PORT}" >> .env
+                        echo "DB_DATABASE=${DB_DATABASE}" >> .env
+                        echo "DB_USERNAME=${DB_USERNAME}" >> .env
+                        echo "DB_PASSWORD=${DB_PASSWORD}" >> .env
+                    '''
+                    
+                    // Create bootstrap cache directory with appropriate permissions
+                    sh '''
+                        mkdir -p bootstrap/cache
+                        chown -R jenkins:jenkins bootstrap/cache
+                        chmod -R 775 bootstrap/cache
+                    '''
+                    
+                    // Install Composer dependencies with error handling
+                    sh '''
+                        set -e
+                        composer install --no-scripts
+                    '''
+                    
+                    // Run Laravel artisan commands
+                    sh '''
+                        php artisan key:generate
+                        php artisan clear-compiled
+                        php artisan migrate --force
+                        php artisan db:seed --force
+                    '''
                 }
             }
         }
