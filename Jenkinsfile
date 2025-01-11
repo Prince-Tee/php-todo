@@ -19,6 +19,7 @@ pipeline {
                     // Move .env.sample to .env and set environment variables
                     sh '''
                         mv .env.sample .env
+                        echo "APP_KEY=" >> .env
                         echo "DB_HOST=${DB_HOST}" >> .env
                         echo "DB_PORT=${DB_PORT}" >> .env
                         echo "DB_DATABASE=${DB_DATABASE}" >> .env
