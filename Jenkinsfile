@@ -52,7 +52,7 @@ pipeline {
         }
         stage ('Execute Unit Tests') {
             steps {
-                sh './vendor/bin/phpunit || true'                
+                sh './vendor/bin/phpunit'                
             }
         }
         stage('Code Analysis') {
@@ -115,7 +115,7 @@ pipeline {
     }
     steps {
         withSonarQubeEnv('sonarqube') {
-            sh "${scannerHome}/bin/sonar-scanner || true"
+            sh "${scannerHome}/bin/sonar-scanner"
         }
     }
 }
